@@ -1,0 +1,58 @@
+name: CI/CD Pipeline - Python Clculator
+
+on:
+  push:
+    branches: [master, staging]
+  pull_request:
+    branches: [master, staging]
+
+jobs:
+    # JOB1 : RUN TESTS
+    test:
+      runs-on: ubuntu-latest
+      name: RUN Tests
+      
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+        
+        - name: Set up Python
+          uses: actions/setup-python@v4
+          with:
+            python-version: '3.11'
+        
+        - name: Install dependencies
+          run: pip install pytest
+          
+        - name: Run tests
+          run: pytest test_calculator.py -v
+    
+    #JOB2  : BUILD & PUSH docker image
+    build-and-push:
+      needs: test
+      runs-on: ubuntu-latest
+      name: Build and Push Docker Image
+      
+      env: 
+        IMAGE: ${{ secrets.DOCKER_USER  }}/calculator-cicd:${{ github.sha }}
+
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v3
+        
+        - name: Log in to Docker Hub
+          uses: docker/login-actions@v3
+          with:
+            username: ${{ secrets.DOCKER_USER }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+        
+        - name: Build Docker image
+          run: docker build -t ${{ env.IMAGE}} .
+
+        - name: Push to Docker Hub
+          run: docker push ${{ env.IMAGE}}
+          
+        - name: Tag as latest
+          run: |
+            docker tag ${{ env.IMAGE }} ${{ secrets.DOCKER_USER }}/calculator-cicd:latest
+            docker push ${{ secrets.DOCKER_USER }}/calculator-cicd:latest
