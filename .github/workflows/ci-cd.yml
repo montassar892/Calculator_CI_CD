@@ -6,6 +6,7 @@ on:
   pull_request:
     branches: [main, staging]
 
+
 jobs:
     # JOB1 : RUN TESTS
     test:
