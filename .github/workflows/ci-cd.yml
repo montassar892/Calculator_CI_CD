@@ -2,9 +2,9 @@ name: CI/CD Pipeline - Python Clculator
 
 on:
   push:
-    branches: [master, staging]
+    branches: [main, staging]
   pull_request:
-    branches: [master, staging]
+    branches: [main, staging]
 
 jobs:
     # JOB1 : RUN TESTS
